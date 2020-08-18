@@ -18,46 +18,19 @@ public class DepartmentDAO {
 	ResultSet rs = null;
 
 	public Department findById(int id) throws SQLException{
-		try{
-			conn = ConnectionDAO.getInstance().getConnection();
-			stmt = conn.prepareStatement(
-				"SELECT department.*, campus.name AS campusName " +
+		String query = "SELECT department.*, campus.name AS campusName " +
 				"FROM department INNER JOIN campus ON campus.idCampus=department.idCampus " +
-				"WHERE idDepartment = ?");
+				"WHERE idDepartment = ?";
 		
-			stmt.setInt(1, id);
-			
-			rs = stmt.executeQuery();
-			
-			if(rs.next()){
-				return this.loadObject(rs);
-			}else{
-				return null;
-			}
-		}finally{
-			closeConnection(rs, stmt, conn);
-		}
+		return listExecuteQuery(query);
 	}
 	
 	public List<Department> listAll(boolean onlyActive) throws SQLException{
-		try{
-			conn = ConnectionDAO.getInstance().getConnection();
-			stmt = conn.createStatement();
+		String query = "SELECT department.*, campus.name AS campusName " +
+				"FROM department INNER JOIN campus ON campus.idCampus=department.idCampus " + 
+				(onlyActive ? " WHERE department.active=1" : "") + " ORDER BY department.name";
 		
-			rs = stmt.executeQuery("SELECT department.*, campus.name AS campusName " +
-					"FROM department INNER JOIN campus ON campus.idCampus=department.idCampus " + 
-					(onlyActive ? " WHERE department.active=1" : "") + " ORDER BY department.name");
-			
-			List<Department> list = new ArrayList<Department>();
-			
-			while(rs.next()){
-				list.add(this.loadObject(rs));
-			}
-			
-			return list;
-		}finally{
-			closeConnection(rs, stmt, conn);
-		}
+		return listExecuteQuery(query);
 	}
 	
 	public List<Department> listByCampus(int idCampus, boolean onlyActive) throws SQLException{
@@ -125,6 +98,25 @@ public class DepartmentDAO {
 			
 			return department.getIdDepartment();
 		}finally{
+			closeConnection(rs, stmt, conn);
+		}
+	}
+	
+	public List<Department> listExecuteQuery(String query) throws SQLException{
+		try{
+			conn = ConnectionDAO.getInstance().getConnection();
+			stmt = conn.createStatement();
+		
+			rs = stmt.executeQuery(query);
+			
+			List<Department> list = new ArrayList<Department>();
+			
+			while(rs.next()){
+				list.add(this.loadObject(rs));
+			}
+
+			return list;
+		} finally{
 			closeConnection(rs, stmt, conn);
 		}
 	}
