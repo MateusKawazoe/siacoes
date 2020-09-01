@@ -7,20 +7,19 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.lang.AutoCloseable.;
 
 import br.edu.utfpr.dv.siacoes.log.UpdateEvent;
 import br.edu.utfpr.dv.siacoes.model.ActivityUnit;
 
-public class ActivityUnitDAO {
+public class ActivityUnitDAO implements AutoCloseable {
 	Connection conn = null;
 	Statement stmt = null;
 	ResultSet rs = null;
 	
 	public List<ActivityUnit> listAll() throws SQLException{
-		try{
-			conn = ConnectionDAO.getInstance().getConnection();
+		try(conn = ConnectionDAO.getInstance().getConnection()){
 			stmt = conn.createStatement();
-		
 			rs = stmt.executeQuery("SELECT * FROM activityunit ORDER BY description");
 			
 			List<ActivityUnit> list = new ArrayList<ActivityUnit>();
@@ -30,14 +29,13 @@ public class ActivityUnitDAO {
 			}
 			
 			return list;
-		}finally{
-			closeConnection(rs, stmt, conn);
+		}catch(IOException e){
+			System.out.println(e)
 		}
 	}
 	
 	public ActivityUnit findById(int id) throws SQLException{
-		try{
-			conn = ConnectionDAO.getInstance().getConnection();
+		try(conn = ConnectionDAO.getInstance().getConnection()){
 			stmt = conn.prepareStatement("SELECT * FROM activityunit WHERE idActivityUnit=?");
 		
 			stmt.setInt(1, id);
@@ -49,17 +47,15 @@ public class ActivityUnitDAO {
 			}else{
 				return null;
 			}
-		}finally{
-			closeConnection(rs, stmt, conn);
+		}catch(IOException e){
+			System.out.println(e)
 		}
 	}
 	
 	public int save(int idUser, ActivityUnit unit) throws SQLException{
 		boolean insert = (unit.getIdActivityUnit() == 0);
 		
-		try{
-			conn = ConnectionDAO.getInstance().getConnection();
-			
+		try(conn = ConnectionDAO.getInstance().getConnection()){
 			if(insert){
 				stmt = conn.prepareStatement("INSERT INTO activityunit(description, fillAmount, amountDescription) VALUES(?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			}else{
@@ -89,18 +85,9 @@ public class ActivityUnitDAO {
 			}
 			
 			return unit.getIdActivityUnit();
-		}finally{
-			closeConnection(rs, stmt, conn);
+		}catch(IOException e){
+			System.out.println(e)
 		}
-	}
-	
-	private void closeConnection(ResultSet rs, Statement stmt, Connection conn) {
-		if((rs != null) && !rs.isClosed())
-			rs.close();
-		if((stmt != null) && !stmt.isClosed())
-			stmt.close();
-		if((conn != null) && !conn.isClosed())
-			conn.close();	
 	}
 	
 	private ActivityUnit loadObject(ResultSet rs) throws SQLException{
