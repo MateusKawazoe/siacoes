@@ -30,7 +30,7 @@ public class ActivityUnitDAO {
 			
 			return list;
 		}catch(SQLException e){
-			System.out.println(e)
+			System.out.println(e);
 		}
 	}
 	
@@ -47,10 +47,10 @@ public class ActivityUnitDAO {
 					return null;
 				}
 			}catch(SQLException e){
-				System.out.println(e)
+				System.out.println(e);
 			}			
 		}catch(SQLException e){
-			System.out.println(e)
+			System.out.println(e);
 		}
 	}
 	
@@ -79,11 +79,11 @@ public class ActivityUnitDAO {
 			
 			
 		}catch(SQLException e){
-			System.out.println(e)
+			System.out.println(e);
 		}
 	}
 
-	public executeStmt(int idUser, ActivityUnit unit) {
+	public int executeStmt(int idUser, ActivityUnit unit) throws SQLException{
 		stmt.setString(1, unit.getDescription());
 		stmt.setInt(2, (unit.isFillAmount() ? 1 : 0));
 		stmt.setString(3, unit.getAmountDescription());
@@ -101,6 +101,8 @@ public class ActivityUnitDAO {
 				}
 				
 				new UpdateEvent(conn).registerInsert(idUser, unit);
+			}catch(SQLException e){
+				System.out.println(e);
 			}	
 		} else {
 			new UpdateEvent(conn).registerUpdate(idUser, unit);
