@@ -1,7 +1,7 @@
 ﻿package br.edu.utfpr.dv.siacoes.model;
 
 import java.io.Serializable;
-import lombok.Data;
+import lombok.*;
 
 @Getter @Setter @ToString @NoArgsConstructor
 public class Department implements Serializable {
