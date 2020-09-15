@@ -57,60 +57,45 @@ public class ActivityUnitDAO {
 	public int save(int idUser, ActivityUnit unit) throws SQLException{
 		boolean insert = (unit.getIdActivityUnit() == 0);
 		
-		try(conn = ConnectionDAO.getInstance().getConnection()){
-			if(insert){
-				try(
-					stmt = conn.prepareStatement(
-						"INSERT INTO activityunit(description, fillAmount, amountDescription) VALUES(?, ?, ?)", 
-						Statement.RETURN_GENERATED_KEYS
-					);
-				){
-					return executeStmt(idUser, unit)
-				}
-			}else{
-				try(
-					stmt = conn.prepareStatement(
-						"UPDATE activityunit SET description=?, fillAmount=?, amountDescription=? WHERE idActivityUnit=?"
-					);
-				){
-					return executeStmt(idUser, unit)
-				}
+		try(
+			conn = ConnectionDAO.getInstance().getConnection();
+
+			if(insert) {
+				stmt = conn.prepareStatement("INSERT INTO activityunit(description, fillAmount, amountDescription) VALUES(?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			} else {
+				stmt = conn.prepareStatement("UPDATE activityunit SET description=?, fillAmount=?, amountDescription=? WHERE idActivityUnit=?");
+			}
+		){		
+			stmt.setString(1, unit.getDescription());
+			stmt.setInt(2, (unit.isFillAmount() ? 1 : 0));
+			stmt.setString(3, unit.getAmountDescription());
+			
+			if(!insert){
+				stmt.setInt(4, unit.getIdActivityUnit());
 			}
 			
+			stmt.execute();
 			
+			if(insert){
+				try(rs = stmt.getGeneratedKeys()) {
+					if(rs.next()){
+						unit.setIdActivityUnit(rs.getInt(1));
+					}
+					
+					new UpdateEvent(conn).registerInsert(idUser, unit);
+				}catch(SQLException e){
+					System.out.println(e);
+				}	
+			} else {
+				new UpdateEvent(conn).registerUpdate(idUser, unit);
+			}
+			
+			return unit.getIdActivityUnit();	
 		}catch(SQLException e){
 			System.out.println(e);
 		}
 	}
 
-	public int executeStmt(int idUser, ActivityUnit unit) throws SQLException{
-		stmt.setString(1, unit.getDescription());
-		stmt.setInt(2, (unit.isFillAmount() ? 1 : 0));
-		stmt.setString(3, unit.getAmountDescription());
-		
-		if(!insert){
-			stmt.setInt(4, unit.getIdActivityUnit());
-		}
-		
-		stmt.execute();
-		
-		if(insert){
-			try(rs = stmt.getGeneratedKeys()) {
-				if(rs.next()){
-					unit.setIdActivityUnit(rs.getInt(1));
-				}
-				
-				new UpdateEvent(conn).registerInsert(idUser, unit);
-			}catch(SQLException e){
-				System.out.println(e);
-			}	
-		} else {
-			new UpdateEvent(conn).registerUpdate(idUser, unit);
-		}
-		
-		return unit.getIdActivityUnit();
-	}
-	
 	private ActivityUnit loadObject(ResultSet rs) throws SQLException{
 		ActivityUnit unit = new ActivityUnit();
 		
