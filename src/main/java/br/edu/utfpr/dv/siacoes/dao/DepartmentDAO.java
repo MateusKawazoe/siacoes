@@ -12,25 +12,14 @@ import java.util.List;
 import br.edu.utfpr.dv.siacoes.log.UpdateEvent;
 import br.edu.utfpr.dv.siacoes.model.Department;
 
-public class DepartmentDAO {
-	Connection conn = null;
-	PreparedStatement stmt = null;
-	ResultSet rs = null;
+public class DepartmentDAO extends TemplateDAO<Department> {
 
 	public Department findById(int id) throws SQLException{
 		String query = "SELECT department.*, campus.name AS campusName " +
 				"FROM department INNER JOIN campus ON campus.idCampus=department.idCampus " +
 				"WHERE idDepartment = ?";
 		
-		return listExecuteQuery(query);
-	}
-	
-	public List<Department> listAll(boolean onlyActive) throws SQLException{
-		String query = "SELECT department.*, campus.name AS campusName " +
-				"FROM department INNER JOIN campus ON campus.idCampus=department.idCampus " + 
-				(onlyActive ? " WHERE department.active=1" : "") + " ORDER BY department.name";
-		
-		return listExecuteQuery(query);
+		return listAll(query);
 	}
 	
 	public List<Department> listByCampus(int idCampus, boolean onlyActive) throws SQLException{
@@ -98,24 +87,6 @@ public class DepartmentDAO {
 			}
 			
 			return department.getIdDepartment();
-		}catch (SQLException e) {
-			System.out.println(e);
-		}
-	}
-	
-	public List<Department> listExecuteQuery(String query) throws SQLException{
-		try(
-			conn = ConnectionDAO.getInstance().getConnection();
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery(query)
-		){
-			List<Department> list = new ArrayList<Department>();
-			
-			while(rs.next()){
-				list.add(this.loadObject(rs));
-			}
-
-			return list;
 		}catch (SQLException e) {
 			System.out.println(e);
 		}

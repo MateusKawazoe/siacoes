@@ -7,32 +7,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.lang.AutoCloseable.;
 
 import br.edu.utfpr.dv.siacoes.log.UpdateEvent;
 import br.edu.utfpr.dv.siacoes.model.ActivityUnit;
 
 public class ActivityUnitDAO {
-	Connection conn = null;
-	Statement stmt = null;
-	ResultSet rs = null;
-	
-	public List<ActivityUnit> listAll() throws SQLException{
-		try(conn = ConnectionDAO.getInstance().getConnection()
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT * FROM activityunit ORDER BY description")
-		){		
-			List<ActivityUnit> list = new ArrayList<ActivityUnit>();
-			
-			while(rs.next()){
-				list.add(this.loadObject(rs));
-			}
-			
-			return list;
-		}catch(SQLException e){
-			System.out.println(e);
-		}
-	}
 	
 	public ActivityUnit findById(int id) throws SQLException{
 		try(conn = ConnectionDAO.getInstance().getConnection();
