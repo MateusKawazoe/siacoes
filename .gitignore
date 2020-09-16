@@ -28,3 +28,4 @@ https2.txt
 https renew\.txt
 
 src/main/java/br/edu/utfpr/dv/siacoes/sign/SignatureKey.java
+/nbproject/
